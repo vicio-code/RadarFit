@@ -1,33 +1,51 @@
 import { Results } from "@prisma/client";
 import { getCompetition } from "../model/competition.model";
 
-// switch case && notMutation
 function convertUnits(results: Results[], name: string) {
-  results.forEach((result) => {
+  return results.map((result) => {
     if (result.unit === "ml") {
-      result.value = String(Number(result.value) / 1000);
-      result.unit = "l";
+      return {
+        ...result,
+        value: String(Number(result.value) / 1000),
+        unit: "l",
+      };
     }
     if (result.unit === "m" && name === "competição de yoga") {
-      result.value = String(Number(result.value) * 60);
-      result.unit = "s";
+      return {
+        ...result,
+        value: String(Number(result.value) * 60),
+        unit: "s",
+      };
     }
     if (result.unit === "h") {
-      result.value = String(Number(result.value) * 3600);
-      result.unit = "s";
+      return {
+        ...result,
+        value: String(Number(result.value) * 3600),
+        unit: "s",
+      };
     }
     if (result.unit === "cal") {
-      result.value = String(Number(result.value) / 1000);
-      result.unit = "kcal";
+      return {
+        ...result,
+        value: String(Number(result.value) / 1000),
+        unit: "kcal",
+      };
     }
     if (result.unit === "cm") {
-      result.value = String(Number(result.value) / 100);
-      result.unit = "m";
+      return {
+        ...result,
+        value: String(Number(result.value) / 100),
+        unit: "m",
+      };
     }
     if (result.unit === "km") {
-      result.value = String(Number(result.value) * 1000);
-      result.unit = "m";
+      return {
+        ...result,
+        value: String(Number(result.value) * 1000),
+        unit: "m",
+      };
     }
+    return { ...result };
   });
 }
 
@@ -53,14 +71,14 @@ function createRanking(sortedResults: Results[]) {
     const result = sortedResults[index];
 
     if (prevValue === result.value) {
-      ranking.push({ ...result, position });
       prevValue = result.value;
+      ranking.push({ ...result, position });
       continue;
     }
 
-    ranking.push({ ...result, position });
     prevValue = result.value;
     position = ranking.length + 1;
+    ranking.push({ ...result, position });
   }
   return ranking;
 }
@@ -71,9 +89,9 @@ export async function getRankings(id: number) {
     return { results: undefined, error: "Invalid competition ID" };
 
   const { results, name } = competition;
-  convertUnits(results, name);
+  const convertedResults = convertUnits(results, name);
 
-  let sortedResults = results
+  let sortedResults = convertedResults
     .sort((a, b) => Number(a.value) - Number(b.value))
     .reverse();
 
